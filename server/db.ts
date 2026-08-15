@@ -2,8 +2,32 @@ import fs from 'fs';
 import path from 'path';
 import { Category, Product, Review, User, Order, CartItem, WishlistItem, AdminStats, OrderStatus, StoreSettings, PaymentStatus } from '../src/types';
 
-const DATA_DIR = path.join(process.cwd(), 'data');
-const DB_FILE = path.join(DATA_DIR, 'store.json');
+function resolveDbFilePath(): string {
+  // Test local ./data directory first (for local dev and standard containers)
+  try {
+    const localDir = path.join(process.cwd(), 'data');
+    if (!fs.existsSync(localDir)) {
+      fs.mkdirSync(localDir, { recursive: true });
+    }
+    const testFile = path.join(localDir, '.write-test');
+    fs.writeFileSync(testFile, '1');
+    fs.unlinkSync(testFile);
+    return path.join(localDir, 'store.json');
+  } catch {
+    // Read-only filesystem detected (e.g. AWS Lambda / Vercel Serverless Function)
+    const tmpDir = path.join('/tmp', 'markoaz-data');
+    try {
+      if (!fs.existsSync(tmpDir)) {
+        fs.mkdirSync(tmpDir, { recursive: true });
+      }
+    } catch {
+      // Ignore
+    }
+    return path.join(tmpDir, 'store.json');
+  }
+}
+
+let activeDbFilePath = resolveDbFilePath();
 
 const defaultSettings: StoreSettings = {
   announcement: '⚡ FLASH SALE LIVE: Up to 50% OFF on Top Tech & Audio! Free Express COD Delivery.',
@@ -505,16 +529,33 @@ const initialOrders: Order[] = [
 
 class DBStore {
   private data: Schema;
+  private dbPath: string;
 
   constructor() {
-    if (!fs.existsSync(DATA_DIR)) {
-      fs.mkdirSync(DATA_DIR, { recursive: true });
+    this.dbPath = activeDbFilePath;
+    const bundledPath = path.join(process.cwd(), 'data', 'store.json');
+
+    let rawData: string | null = null;
+
+    if (fs.existsSync(this.dbPath)) {
+      try {
+        rawData = fs.readFileSync(this.dbPath, 'utf-8');
+      } catch (err) {
+        console.warn('Could not read from activeDbFilePath, checking bundled fallback', err);
+      }
     }
 
-    if (fs.existsSync(DB_FILE)) {
+    if (!rawData && fs.existsSync(bundledPath)) {
       try {
-        const raw = fs.readFileSync(DB_FILE, 'utf-8');
-        this.data = JSON.parse(raw);
+        rawData = fs.readFileSync(bundledPath, 'utf-8');
+      } catch (err) {
+        console.warn('Could not read from bundledPath', err);
+      }
+    }
+
+    if (rawData) {
+      try {
+        this.data = JSON.parse(rawData);
         let mutated = false;
 
         // 1. Ensure categories exist and are complete
@@ -630,7 +671,7 @@ class DBStore {
           this.save();
         }
       } catch (err) {
-        console.error('Error reading db file, re-initializing', err);
+        console.error('Error parsing store data, initializing defaults', err);
         this.data = this.getDefaultData();
         this.save();
       }
@@ -655,9 +696,13 @@ class DBStore {
 
   private save() {
     try {
-      fs.writeFileSync(DB_FILE, JSON.stringify(this.data, null, 2), 'utf-8');
+      const parentDir = path.dirname(this.dbPath);
+      if (!fs.existsSync(parentDir)) {
+        fs.mkdirSync(parentDir, { recursive: true });
+      }
+      fs.writeFileSync(this.dbPath, JSON.stringify(this.data, null, 2), 'utf-8');
     } catch (err) {
-      console.error('Failed to save store file', err);
+      console.warn('Notice: Storage file write skipped or read-only filesystem', err);
     }
   }
 
