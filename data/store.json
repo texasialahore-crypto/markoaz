@@ -1,0 +1,603 @@
+{
+  "categories": [
+    {
+      "id": "cat-1",
+      "name": "Electronics",
+      "slug": "electronics",
+      "iconName": "Headphones",
+      "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80",
+      "productCount": 4,
+      "description": "High performance gadgetry, smart wearables & audio gear."
+    },
+    {
+      "id": "cat-2",
+      "name": "Fashion & Apparel",
+      "slug": "fashion",
+      "iconName": "Shirt",
+      "image": "https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?auto=format&fit=crop&w=800&q=80",
+      "productCount": 3,
+      "description": "Modern, comfortable apparel and everyday minimalist fashion."
+    },
+    {
+      "id": "cat-3",
+      "name": "Home & Living",
+      "slug": "home-living",
+      "iconName": "Home",
+      "image": "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=800&q=80",
+      "productCount": 2,
+      "description": "Aesthetic home decor, coffee accessories & smart lighting."
+    },
+    {
+      "id": "cat-4",
+      "name": "Beauty & Health",
+      "slug": "beauty-health",
+      "iconName": "Sparkles",
+      "image": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=80",
+      "productCount": 1,
+      "description": "Nourishing skincare essentials and wellness products."
+    },
+    {
+      "id": "cat-5",
+      "name": "Sports & Fitness",
+      "slug": "sports-fitness",
+      "iconName": "Activity",
+      "image": "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=800&q=80",
+      "productCount": 2,
+      "description": "Performance footwear, activewear and fitness gear."
+    }
+  ],
+  "products": [
+    {
+      "id": "prod-1",
+      "name": "AuraSound ANC Wireless Headphones",
+      "slug": "aurasound-anc-wireless-headphones",
+      "description": "Immerse yourself in crystal clear audio with active noise cancellation, 40-hour battery life, and ultra-soft memory foam earcups.",
+      "price": 189.99,
+      "originalPrice": 249.99,
+      "discountPercentage": 24,
+      "rating": 4.8,
+      "reviewCount": 34,
+      "category": "Electronics",
+      "stock": 25,
+      "isFeatured": true,
+      "isFlashDeal": true,
+      "tags": [
+        "wireless",
+        "audio",
+        "noise-canceling",
+        "bluetooth"
+      ],
+      "images": [
+        "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1000&q=80",
+        "https://images.unsplash.com/photo-1484704849700-f032a568e944?auto=format&fit=crop&w=1000&q=80",
+        "https://images.unsplash.com/photo-1546435770-a3e426bf472b?auto=format&fit=crop&w=1000&q=80"
+      ],
+      "specifications": {
+        "Battery Life": "40 Hours",
+        "Bluetooth Version": "5.3",
+        "Weight": "250g",
+        "Noise Cancellation": "Hybrid Active ANC (-38dB)"
+      },
+      "variants": {
+        "colors": [
+          "Matte Black",
+          "Silver Gray",
+          "Navy Blue"
+        ]
+      },
+      "createdAt": "2026-08-01T10:00:00.000Z"
+    },
+    {
+      "id": "prod-2",
+      "name": "UltraSync SmartWatch Pro v8",
+      "slug": "ultrasync-smartwatch-pro-v8",
+      "description": "Track your health, workouts, sleep cycles, and daily notifications with a vivid AMOLED retina display and water-resistant titanium frame.",
+      "price": 279,
+      "originalPrice": 329,
+      "discountPercentage": 15,
+      "rating": 4.9,
+      "reviewCount": 52,
+      "category": "Electronics",
+      "stock": 18,
+      "isFeatured": true,
+      "isFlashDeal": false,
+      "tags": [
+        "smartwatch",
+        "fitness",
+        "wearable",
+        "health"
+      ],
+      "images": [
+        "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1000&q=80",
+        "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&w=1000&q=80"
+      ],
+      "specifications": {
+        "Display": "1.92\" AMOLED Touch",
+        "Water Resistance": "50m (5 ATM)",
+        "Battery Life": "7 Days Typical Use",
+        "Sensors": "SpO2, Heart Rate, ECG, GPS"
+      },
+      "variants": {
+        "colors": [
+          "Space Gray",
+          "Starlight Silver",
+          "Rose Gold"
+        ]
+      },
+      "createdAt": "2026-08-02T11:00:00.000Z"
+    },
+    {
+      "id": "prod-3",
+      "name": "Minimalist Artisan Leather Backpack",
+      "slug": "minimalist-artisan-leather-backpack",
+      "description": "Crafted from full-grain top layer leather with dedicated 15-inch padded laptop sleeve, quick-access magnetic pockets, and ergonomic padded straps.",
+      "price": 119.5,
+      "originalPrice": 149,
+      "discountPercentage": 20,
+      "rating": 4.7,
+      "reviewCount": 19,
+      "category": "Fashion & Apparel",
+      "stock": 12,
+      "isFeatured": true,
+      "isFlashDeal": false,
+      "tags": [
+        "leather",
+        "backpack",
+        "travel",
+        "fashion"
+      ],
+      "images": [
+        "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=1000&q=80",
+        "https://images.unsplash.com/photo-1622560480605-d83c853bc5c3?auto=format&fit=crop&w=1000&q=80"
+      ],
+      "specifications": {
+        "Material": "Full-Grain Genuine Cowhide",
+        "Laptop Fit": "Up to 15.6 inch",
+        "Capacity": "22 Liters",
+        "Dimensions": "42 x 30 x 14 cm"
+      },
+      "variants": {
+        "colors": [
+          "Cognac Brown",
+          "Midnight Black",
+          "Vintage Tan"
+        ]
+      },
+      "createdAt": "2026-08-03T09:30:00.000Z"
+    },
+    {
+      "id": "prod-4",
+      "name": "MechType Wireless Mechanical Keyboard",
+      "slug": "mechtype-wireless-mechanical-keyboard",
+      "description": "Custom hot-swappable tactile switches, RGB per-key backlighting, multi-device Bluetooth/2.4G connectivity, and CNC aluminum chassis.",
+      "price": 139.99,
+      "originalPrice": 169.99,
+      "discountPercentage": 18,
+      "rating": 4.8,
+      "reviewCount": 41,
+      "category": "Electronics",
+      "stock": 15,
+      "isFeatured": false,
+      "isFlashDeal": true,
+      "tags": [
+        "keyboard",
+        "gaming",
+        "office",
+        "wireless"
+      ],
+      "images": [
+        "https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=1000&q=80",
+        "https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?auto=format&fit=crop&w=1000&q=80"
+      ],
+      "specifications": {
+        "Layout": "75% Compact (84 Keys)",
+        "Switch Type": "Gateron G Pro Yellow (Tactile)",
+        "Connectivity": "Bluetooth 5.1 / 2.4Ghz / USB-C",
+        "Battery": "4000mAh Rechargeable"
+      },
+      "variants": {
+        "colors": [
+          "Cyber Gray",
+          "Retro White"
+        ]
+      },
+      "createdAt": "2026-08-04T14:15:00.000Z"
+    },
+    {
+      "id": "prod-5",
+      "name": "Organic Heavyweight Fleece Hoodie",
+      "slug": "organic-heavyweight-fleece-hoodie",
+      "description": "Ultra-soft 450gsm organic combed cotton hoodie with double-lined hood, relaxed drop-shoulder cut, and pre-shrunk premium finish.",
+      "price": 68,
+      "originalPrice": 85,
+      "discountPercentage": 20,
+      "rating": 4.6,
+      "reviewCount": 28,
+      "category": "Fashion & Apparel",
+      "stock": 40,
+      "isFeatured": false,
+      "isFlashDeal": true,
+      "tags": [
+        "hoodie",
+        "apparel",
+        "cotton",
+        "streetwear"
+      ],
+      "images": [
+        "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=1000&q=80",
+        "https://images.unsplash.com/photo-1509967419530-da38b4704bc6?auto=format&fit=crop&w=1000&q=80"
+      ],
+      "specifications": {
+        "Material": "100% Organic Combed Cotton",
+        "Weight": "450 GSM Heavyweight",
+        "Fit": "Relaxed Unisex",
+        "Care": "Machine wash cold"
+      },
+      "variants": {
+        "colors": [
+          "Oatmeal Heather",
+          "Charcoal Black",
+          "Sage Green"
+        ],
+        "sizes": [
+          "S",
+          "M",
+          "L",
+          "XL",
+          "XXL"
+        ]
+      },
+      "createdAt": "2026-08-05T08:20:00.000Z"
+    },
+    {
+      "id": "prod-6",
+      "name": "AuraBeam Smart Ambient Table Lamp",
+      "slug": "aurabeam-smart-ambient-table-lamp",
+      "description": "Touch-controlled dimmable warmth with 16 million RGB color choices, sunrise simulation alarm, and wireless smartphone charging base.",
+      "price": 59.99,
+      "originalPrice": 79.99,
+      "discountPercentage": 25,
+      "rating": 4.7,
+      "reviewCount": 22,
+      "category": "Home & Living",
+      "stock": 20,
+      "isFeatured": true,
+      "isFlashDeal": false,
+      "tags": [
+        "lighting",
+        "smart home",
+        "lamp",
+        "decor"
+      ],
+      "images": [
+        "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&w=1000&q=80",
+        "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=1000&q=80"
+      ],
+      "specifications": {
+        "Power Output": "12W LED / 10W Wireless Charger",
+        "Color Temperature": "2700K - 6500K + RGB",
+        "Control": "Touch / App / Voice Assist",
+        "Material": "Anodized Aluminum + Frosted Acrylic"
+      },
+      "variants": {
+        "colors": [
+          "Nordic White",
+          "Space Gray"
+        ]
+      },
+      "createdAt": "2026-08-06T16:00:00.000Z"
+    },
+    {
+      "id": "prod-7",
+      "name": "Barista Pour-Over Coffee Ceramic Set",
+      "slug": "barista-pour-over-coffee-ceramic-set",
+      "description": "Handcrafted ceramic dripper with thermal insulated glass carafe, precision gooseneck spout kettle compatibility, and stainless mesh filter.",
+      "price": 48.5,
+      "originalPrice": 60,
+      "discountPercentage": 19,
+      "rating": 4.9,
+      "reviewCount": 37,
+      "category": "Home & Living",
+      "stock": 14,
+      "isFeatured": false,
+      "isFlashDeal": false,
+      "tags": [
+        "coffee",
+        "ceramic",
+        "kitchen",
+        "lifestyle"
+      ],
+      "images": [
+        "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=1000&q=80",
+        "https://images.unsplash.com/photo-1517256064527-09c73fc73e38?auto=format&fit=crop&w=1000&q=80"
+      ],
+      "specifications": {
+        "Carafe Capacity": "600 ml (2-4 cups)",
+        "Material": "Matte Glazed Ceramic & Borosilicate Glass",
+        "Dishwasher Safe": "Yes",
+        "Includes": "Dripper, Carafe, 50 Filter Papers"
+      },
+      "variants": {
+        "colors": [
+          "Matte Charcoal",
+          "Warm Terracotta",
+          "Pure White"
+        ]
+      },
+      "createdAt": "2026-08-07T12:00:00.000Z"
+    },
+    {
+      "id": "prod-8",
+      "name": "Velocity Pro Cushion Running Shoes",
+      "slug": "velocity-pro-cushion-running-shoes",
+      "description": "Engineered breathable mesh upper with responsive carbon-infused foam midsole for maximum energy return and rubber traction grip.",
+      "price": 129,
+      "originalPrice": 159,
+      "discountPercentage": 19,
+      "rating": 4.8,
+      "reviewCount": 45,
+      "category": "Sports & Fitness",
+      "stock": 30,
+      "isFeatured": true,
+      "isFlashDeal": true,
+      "tags": [
+        "sneakers",
+        "running",
+        "sports",
+        "footwear"
+      ],
+      "images": [
+        "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=1000&q=80",
+        "https://images.unsplash.com/photo-1608231387042-66d1773070a5?auto=format&fit=crop&w=1000&q=80"
+      ],
+      "specifications": {
+        "Weight": "230g (US Size 9)",
+        "Midsole Drop": "8mm",
+        "Arch Support": "Neutral to Moderate",
+        "Sole Material": "Continental Rubber Grip"
+      },
+      "variants": {
+        "colors": [
+          "Flame Red",
+          "Electric Blue",
+          "Stealth Black"
+        ],
+        "sizes": [
+          "7",
+          "8",
+          "9",
+          "10",
+          "11",
+          "12"
+        ]
+      },
+      "createdAt": "2026-08-08T09:10:00.000Z"
+    },
+    {
+      "id": "prod-9",
+      "name": "GlowRadiance Hyaluronic Hydrating Serum",
+      "slug": "glowradiance-hyaluronic-hydrating-serum",
+      "description": "Multi-molecular hyaluronic acid combined with vitamin B5 and niacinamide for deep plump moisture, radiant skin barrier repair, and collagen boost.",
+      "price": 38,
+      "originalPrice": 48,
+      "discountPercentage": 21,
+      "rating": 4.9,
+      "reviewCount": 63,
+      "category": "Beauty & Health",
+      "stock": 50,
+      "isFeatured": true,
+      "isFlashDeal": false,
+      "tags": [
+        "skincare",
+        "serum",
+        "beauty",
+        "hyaluronic"
+      ],
+      "images": [
+        "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=1000&q=80",
+        "https://images.unsplash.com/photo-1608248597261-833244679159?auto=format&fit=crop&w=1000&q=80"
+      ],
+      "specifications": {
+        "Volume": "50 ml / 1.7 fl. oz",
+        "Key Ingredients": "Hyaluronic Acid 3%, Niacinamide 5%, Vitamin B5",
+        "Skin Type": "All Skin Types (Dermatologist Tested)",
+        "Cruelty Free": "Yes & Vegan"
+      },
+      "createdAt": "2026-08-09T15:30:00.000Z"
+    },
+    {
+      "id": "prod-10",
+      "name": "HydroLock Thermal Insulated Tumbler 32oz",
+      "slug": "hydrolock-thermal-insulated-tumbler-32oz",
+      "description": "Double-wall vacuum stainless steel keeps beverages ice-cold for 24 hours or piping hot for 12 hours. Features 2-in-1 straw and sip leakproof lid.",
+      "price": 29.99,
+      "originalPrice": 38,
+      "discountPercentage": 21,
+      "rating": 4.8,
+      "reviewCount": 29,
+      "category": "Sports & Fitness",
+      "stock": 35,
+      "isFeatured": false,
+      "isFlashDeal": false,
+      "tags": [
+        "tumbler",
+        "water bottle",
+        "fitness",
+        "insulated"
+      ],
+      "images": [
+        "https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&w=1000&q=80",
+        "https://images.unsplash.com/photo-1589365278144-c9e705f843ba?auto=format&fit=crop&w=1000&q=80"
+      ],
+      "specifications": {
+        "Capacity": "32 oz / 950 ml",
+        "Material": "18/8 Food Grade Stainless Steel",
+        "Insulation": "24 hrs Cold / 12 hrs Hot",
+        "BPA Free": "Yes"
+      },
+      "variants": {
+        "colors": [
+          "Eucalyptus Green",
+          "Ocean Teal",
+          "Matte Black",
+          "Blush Pink"
+        ]
+      },
+      "createdAt": "2026-08-10T11:45:00.000Z"
+    }
+  ],
+  "reviews": [
+    {
+      "id": "rev-1",
+      "productId": "prod-1",
+      "userId": "user-2",
+      "userName": "David Miller",
+      "rating": 5,
+      "title": "Mind-blowing Noise Cancellation!",
+      "comment": "The sound quality is crisp and warm, ANC wipes out background office noise completely. Battery life easily lasts my whole work week!",
+      "createdAt": "2026-08-05T14:20:00.000Z",
+      "verifiedBuyer": true
+    },
+    {
+      "id": "rev-2",
+      "productId": "prod-1",
+      "userId": "user-3",
+      "userName": "Sarah Jenkins",
+      "rating": 5,
+      "title": "Super comfortable for long listening",
+      "comment": "Ear pads are like pillows. Love the matte black finish too!",
+      "createdAt": "2026-08-08T09:12:00.000Z",
+      "verifiedBuyer": true
+    },
+    {
+      "id": "rev-3",
+      "productId": "prod-2",
+      "userId": "user-2",
+      "userName": "David Miller",
+      "rating": 5,
+      "title": "Best smartwatch I have owned",
+      "comment": "The AMOLED screen is crystal clear even under bright sunlight. GPS tracking on my morning runs is super accurate.",
+      "createdAt": "2026-08-06T11:00:00.000Z",
+      "verifiedBuyer": true
+    },
+    {
+      "id": "rev-4",
+      "productId": "prod-8",
+      "userId": "user-3",
+      "userName": "Sarah Jenkins",
+      "rating": 5,
+      "title": "Feels like running on clouds",
+      "comment": "Responsive cushioning saved my knees during marathon prep. Fits true to size.",
+      "createdAt": "2026-08-10T16:40:00.000Z",
+      "verifiedBuyer": true
+    }
+  ],
+  "users": [
+    {
+      "id": "user-admin",
+      "customerId": "ADMIN-001",
+      "email": "admin@markoaz.com",
+      "name": "Markoaz Administrator",
+      "phone": "+1 (555) 019-2831",
+      "role": "admin",
+      "address": {
+        "street": "742 Evergreen Terrace",
+        "city": "Springfield",
+        "state": "IL",
+        "zipCode": "62701",
+        "country": "United States"
+      },
+      "createdAt": "2026-08-01T00:00:00.000Z"
+    },
+    {
+      "id": "user-2",
+      "customerId": "CUST-84920",
+      "email": "demo@markoaz.com",
+      "name": "David Miller",
+      "phone": "+1 (555) 438-9102",
+      "role": "customer",
+      "address": {
+        "street": "100 Innovation Way, Suite 400",
+        "city": "San Francisco",
+        "state": "CA",
+        "zipCode": "94105",
+        "country": "United States"
+      },
+      "createdAt": "2026-08-02T10:00:00.000Z"
+    }
+  ],
+  "orders": [
+    {
+      "id": "ORD-98231",
+      "userId": "user-2",
+      "customerId": "CUST-84920",
+      "customerName": "David Miller",
+      "customerEmail": "demo@markoaz.com",
+      "customerPhone": "+1 (555) 438-9102",
+      "shippingAddress": {
+        "street": "100 Innovation Way, Suite 400",
+        "city": "San Francisco",
+        "state": "CA",
+        "zipCode": "94105",
+        "country": "United States"
+      },
+      "items": [
+        {
+          "productId": "prod-1",
+          "name": "AuraSound ANC Wireless Headphones",
+          "price": 189.99,
+          "quantity": 1,
+          "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1000&q=80",
+          "selectedColor": "Matte Black"
+        }
+      ],
+      "subtotal": 189.99,
+      "shippingFee": 0,
+      "discount": 18.99,
+      "tax": 13.68,
+      "total": 184.68,
+      "paymentMethod": "cod",
+      "paymentStatus": "pending",
+      "orderStatus": "out_for_delivery",
+      "trackingNumber": "TRK-MKZ-882194",
+      "estimatedDelivery": "Tomorrow by 5:00 PM",
+      "createdAt": "2026-08-11T14:30:00.000Z",
+      "timeline": [
+        {
+          "status": "placed",
+          "label": "Order Confirmed",
+          "time": "Aug 11, 2:30 PM",
+          "completed": true
+        },
+        {
+          "status": "processing",
+          "label": "Packed & Verified",
+          "time": "Aug 12, 9:15 AM",
+          "completed": true
+        },
+        {
+          "status": "out_for_delivery",
+          "label": "Out for Delivery (Cash on Delivery)",
+          "time": "Aug 13, 8:00 AM",
+          "completed": true
+        },
+        {
+          "status": "delivered",
+          "label": "Delivered",
+          "time": "Estimated Aug 14",
+          "completed": false
+        }
+      ]
+    }
+  ],
+  "carts": {},
+  "wishlists": {},
+  "settings": {
+    "announcement": "⚡ FLASH SALE LIVE: Up to 50% OFF on Top Tech & Audio! Free Express COD Delivery.",
+    "isCodEnabled": true,
+    "freeShippingThreshold": 50,
+    "flashSaleDiscount": 25,
+    "supportPhone": "+1 (800) 555-MARKOAZ",
+    "supportEmail": "support@markoaz.com"
+  }
+}

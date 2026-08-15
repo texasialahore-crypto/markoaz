@@ -1,0 +1,6 @@
+{
+  "name": "Markoaz",
+  "description": "Markoaz - Modern e-commerce platform with live search, wishlist, cart, cash on delivery checkout, order tracking, product reviews, and an admin management dashboard.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
