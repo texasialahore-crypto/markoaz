@@ -1,13 +1,24 @@
-import express, { Request, Response, NextFunction } from 'express';
+import express, { Request, Response, NextFunction, Router } from 'express';
 import { db } from './db';
 
 export function createExpressApp() {
   const app = express();
 
-  // Middleware
+  // 1. Body Parser with pre-parsed fallback safety for Vercel/Serverless
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    if (req.body && typeof req.body === 'string') {
+      try {
+        req.body = JSON.parse(req.body);
+      } catch {
+        // Leave as string if not valid JSON
+      }
+    }
+    next();
+  });
   app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
 
-  // CORS Middleware for broad cross-origin and Vercel serverless preview support
+  // 2. CORS & Preflight headers for cross-origin and Vercel preview domains
   app.use((req: Request, res: Response, next: NextFunction) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
@@ -18,15 +29,21 @@ export function createExpressApp() {
     next();
   });
 
-  // --- API Routes ---
+  // 3. Define all API endpoints on an Express Router
+  const apiRouter = Router();
 
-  // Health
-  app.get('/api/health', (req: Request, res: Response) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  // Health check
+  apiRouter.get('/health', (req: Request, res: Response) => {
+    res.json({
+      status: 'ok',
+      service: 'Markoaz API',
+      version: '1.0.0',
+      timestamp: new Date().toISOString()
+    });
   });
 
   // --- Products API ---
-  app.get('/api/products', (req: Request, res: Response) => {
+  apiRouter.get('/products', (req: Request, res: Response) => {
     try {
       const { category, search, minPrice, maxPrice, minRating, sort, featured, flashDeal } = req.query;
       const products = db.getProducts({
@@ -45,7 +62,7 @@ export function createExpressApp() {
     }
   });
 
-  app.get('/api/products/:id', (req: Request, res: Response) => {
+  apiRouter.get('/products/:id', (req: Request, res: Response) => {
     const product = db.getProductById(req.params.id);
     if (!product) {
       return res.status(404).json({ error: 'Product not found' });
@@ -53,7 +70,7 @@ export function createExpressApp() {
     res.json(product);
   });
 
-  app.post('/api/products', (req: Request, res: Response) => {
+  apiRouter.post('/products', (req: Request, res: Response) => {
     try {
       const newProduct = db.addProduct(req.body);
       res.status(201).json(newProduct);
@@ -62,7 +79,7 @@ export function createExpressApp() {
     }
   });
 
-  app.put('/api/products/:id', (req: Request, res: Response) => {
+  apiRouter.put('/products/:id', (req: Request, res: Response) => {
     const updated = db.updateProduct(req.params.id, req.body);
     if (!updated) {
       return res.status(404).json({ error: 'Product not found' });
@@ -70,7 +87,7 @@ export function createExpressApp() {
     res.json(updated);
   });
 
-  app.delete('/api/products/:id', (req: Request, res: Response) => {
+  apiRouter.delete('/products/:id', (req: Request, res: Response) => {
     const success = db.deleteProduct(req.params.id);
     if (!success) {
       return res.status(404).json({ error: 'Product not found' });
@@ -78,12 +95,19 @@ export function createExpressApp() {
     res.json({ success: true });
   });
 
+  apiRouter.post('/products/:id/restock', (req: Request, res: Response) => {
+    const { amount = 10 } = req.body;
+    const prod = db.restockProduct(req.params.id, Number(amount));
+    if (!prod) return res.status(404).json({ error: 'Product not found' });
+    res.json(prod);
+  });
+
   // --- Categories API ---
-  app.get('/api/categories', (req: Request, res: Response) => {
+  apiRouter.get('/categories', (req: Request, res: Response) => {
     res.json(db.getCategories());
   });
 
-  app.post('/api/categories', (req: Request, res: Response) => {
+  apiRouter.post('/categories', (req: Request, res: Response) => {
     try {
       const newCat = db.addCategory(req.body);
       res.status(201).json(newCat);
@@ -92,29 +116,29 @@ export function createExpressApp() {
     }
   });
 
-  app.put('/api/categories/:id', (req: Request, res: Response) => {
+  apiRouter.put('/categories/:id', (req: Request, res: Response) => {
     const updated = db.updateCategory(req.params.id, req.body);
     if (!updated) return res.status(404).json({ error: 'Category not found' });
     res.json(updated);
   });
 
-  app.delete('/api/categories/:id', (req: Request, res: Response) => {
+  apiRouter.delete('/categories/:id', (req: Request, res: Response) => {
     const success = db.deleteCategory(req.params.id);
     if (!success) return res.status(404).json({ error: 'Category not found' });
     res.json({ success: true });
   });
 
   // --- Reviews API ---
-  app.get('/api/reviews/all', (req: Request, res: Response) => {
+  apiRouter.get('/reviews/all', (req: Request, res: Response) => {
     res.json(db.getAllReviews());
   });
 
-  app.get('/api/products/:id/reviews', (req: Request, res: Response) => {
+  apiRouter.get('/products/:id/reviews', (req: Request, res: Response) => {
     const reviews = db.getProductReviews(req.params.id);
     res.json(reviews);
   });
 
-  app.post('/api/products/:id/reviews', (req: Request, res: Response) => {
+  apiRouter.post('/products/:id/reviews', (req: Request, res: Response) => {
     try {
       const { userId, userName, rating, title, comment } = req.body;
       if (!rating || !comment || !title) {
@@ -133,18 +157,18 @@ export function createExpressApp() {
     }
   });
 
-  app.delete('/api/reviews/:id', (req: Request, res: Response) => {
+  apiRouter.delete('/reviews/:id', (req: Request, res: Response) => {
     const success = db.deleteReview(req.params.id);
     if (!success) return res.status(404).json({ error: 'Review not found' });
     res.json({ success: true });
   });
 
   // --- Store Settings API ---
-  app.get('/api/settings', (req: Request, res: Response) => {
+  apiRouter.get('/settings', (req: Request, res: Response) => {
     res.json(db.getStoreSettings());
   });
 
-  app.put('/api/settings', (req: Request, res: Response) => {
+  apiRouter.put('/settings', (req: Request, res: Response) => {
     try {
       const updated = db.updateStoreSettings(req.body);
       res.json(updated);
@@ -154,7 +178,7 @@ export function createExpressApp() {
   });
 
   // --- Auth API ---
-  app.post('/api/auth/register', (req: Request, res: Response) => {
+  apiRouter.post('/auth/register', (req: Request, res: Response) => {
     try {
       const { email, name, phone, address, role } = req.body;
       if (!email || !name) {
@@ -167,14 +191,14 @@ export function createExpressApp() {
     }
   });
 
-  // Customer Login (Strictly for customers, rejects admin access)
-  app.post('/api/auth/customer-login', (req: Request, res: Response) => {
+  // Customer Login (Strictly for customers, auto-registers new customers)
+  apiRouter.post('/auth/customer-login', (req: Request, res: Response) => {
     try {
       const { email } = req.body;
-      if (!email) {
+      if (!email || typeof email !== 'string' || !email.trim()) {
         return res.status(400).json({ error: 'Email address is required' });
       }
-      const user = db.customerLogin(email);
+      const user = db.customerLogin(email.trim());
       res.json(user);
     } catch (err: any) {
       res.status(400).json({ error: err.message });
@@ -182,7 +206,7 @@ export function createExpressApp() {
   });
 
   // Dedicated Admin Login (Requires administrator credentials & secret PIN)
-  app.post('/api/auth/admin-login', (req: Request, res: Response) => {
+  apiRouter.post('/auth/admin-login', (req: Request, res: Response) => {
     try {
       const { credential, secretKey } = req.body;
       if (!credential || typeof credential !== 'string' || !credential.trim()) {
@@ -198,8 +222,8 @@ export function createExpressApp() {
     }
   });
 
-  // Generic Login (legacy / fallback)
-  app.post('/api/auth/login', (req: Request, res: Response) => {
+  // Generic Login (legacy fallback)
+  apiRouter.post('/auth/login', (req: Request, res: Response) => {
     const { email } = req.body;
     if (!email) {
       return res.status(400).json({ error: 'Email is required' });
@@ -211,7 +235,7 @@ export function createExpressApp() {
     res.json(user);
   });
 
-  app.get('/api/auth/me', (req: Request, res: Response) => {
+  apiRouter.get('/auth/me', (req: Request, res: Response) => {
     const userId = req.headers['x-user-id'] as string;
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
     const user = db.getUserById(userId);
@@ -220,12 +244,12 @@ export function createExpressApp() {
   });
 
   // --- Cart API ---
-  app.get('/api/cart', (req: Request, res: Response) => {
+  apiRouter.get('/cart', (req: Request, res: Response) => {
     const userId = (req.headers['x-user-id'] as string) || 'guest-session';
     res.json(db.getCart(userId));
   });
 
-  app.post('/api/cart', (req: Request, res: Response) => {
+  apiRouter.post('/cart', (req: Request, res: Response) => {
     const userId = (req.headers['x-user-id'] as string) || 'guest-session';
     const { productId, quantity = 1, selectedColor, selectedSize } = req.body;
     if (!productId) return res.status(400).json({ error: 'Product ID required' });
@@ -233,32 +257,32 @@ export function createExpressApp() {
     res.json(cart);
   });
 
-  app.put('/api/cart/:id', (req: Request, res: Response) => {
+  apiRouter.put('/cart/:id', (req: Request, res: Response) => {
     const userId = (req.headers['x-user-id'] as string) || 'guest-session';
     const { quantity } = req.body;
     const cart = db.updateCartItemQuantity(userId, req.params.id, Number(quantity));
     res.json(cart);
   });
 
-  app.delete('/api/cart/:id', (req: Request, res: Response) => {
+  apiRouter.delete('/cart/:id', (req: Request, res: Response) => {
     const userId = (req.headers['x-user-id'] as string) || 'guest-session';
     const cart = db.removeFromCart(userId, req.params.id);
     res.json(cart);
   });
 
-  app.delete('/api/cart', (req: Request, res: Response) => {
+  apiRouter.delete('/cart', (req: Request, res: Response) => {
     const userId = (req.headers['x-user-id'] as string) || 'guest-session';
     db.clearCart(userId);
     res.json([]);
   });
 
   // --- Wishlist API ---
-  app.get('/api/wishlist', (req: Request, res: Response) => {
+  apiRouter.get('/wishlist', (req: Request, res: Response) => {
     const userId = (req.headers['x-user-id'] as string) || 'guest-session';
     res.json(db.getWishlist(userId));
   });
 
-  app.post('/api/wishlist/toggle', (req: Request, res: Response) => {
+  apiRouter.post('/wishlist/toggle', (req: Request, res: Response) => {
     const userId = (req.headers['x-user-id'] as string) || 'guest-session';
     const { productId } = req.body;
     if (!productId) return res.status(400).json({ error: 'Product ID required' });
@@ -267,11 +291,10 @@ export function createExpressApp() {
   });
 
   // --- Orders API ---
-  app.get('/api/orders', (req: Request, res: Response) => {
+  apiRouter.get('/orders', (req: Request, res: Response) => {
     const userId = req.headers['x-user-id'] as string;
     const user = userId ? db.getUserById(userId) : undefined;
 
-    // If user is admin, they can view all orders. Otherwise, show user's orders
     if (user?.role === 'admin' && !req.query.myOnly) {
       res.json(db.getOrders());
     } else if (userId) {
@@ -281,13 +304,13 @@ export function createExpressApp() {
     }
   });
 
-  app.get('/api/orders/:id', (req: Request, res: Response) => {
+  apiRouter.get('/orders/:id', (req: Request, res: Response) => {
     const order = db.getOrderById(req.params.id);
     if (!order) return res.status(404).json({ error: 'Order not found' });
     res.json(order);
   });
 
-  app.post('/api/orders', (req: Request, res: Response) => {
+  apiRouter.post('/orders', (req: Request, res: Response) => {
     try {
       const order = db.createOrder(req.body);
       res.status(201).json(order);
@@ -296,14 +319,7 @@ export function createExpressApp() {
     }
   });
 
-  app.post('/api/products/:id/restock', (req: Request, res: Response) => {
-    const { amount = 10 } = req.body;
-    const prod = db.restockProduct(req.params.id, Number(amount));
-    if (!prod) return res.status(404).json({ error: 'Product not found' });
-    res.json(prod);
-  });
-
-  app.put('/api/orders/:id/status', (req: Request, res: Response) => {
+  apiRouter.put('/orders/:id/status', (req: Request, res: Response) => {
     const { status } = req.body;
     if (!status) return res.status(400).json({ error: 'Status is required' });
     const order = db.updateOrderStatus(req.params.id, status);
@@ -311,7 +327,7 @@ export function createExpressApp() {
     res.json(order);
   });
 
-  app.put('/api/orders/:id/payment-status', (req: Request, res: Response) => {
+  apiRouter.put('/orders/:id/payment-status', (req: Request, res: Response) => {
     const { paymentStatus } = req.body;
     if (!paymentStatus) return res.status(400).json({ error: 'Payment status is required' });
     const order = db.updatePaymentStatus(req.params.id, paymentStatus);
@@ -319,18 +335,18 @@ export function createExpressApp() {
     res.json(order);
   });
 
-  app.delete('/api/orders/:id', (req: Request, res: Response) => {
+  apiRouter.delete('/orders/:id', (req: Request, res: Response) => {
     const success = db.deleteOrder(req.params.id);
     if (!success) return res.status(404).json({ error: 'Order not found' });
     res.json({ success: true });
   });
 
   // --- Users API (Admin) ---
-  app.get('/api/users', (req: Request, res: Response) => {
+  apiRouter.get('/users', (req: Request, res: Response) => {
     res.json(db.getUsers());
   });
 
-  app.post('/api/users', (req: Request, res: Response) => {
+  apiRouter.post('/users', (req: Request, res: Response) => {
     try {
       const user = db.registerUser(req.body);
       res.status(201).json(user);
@@ -339,19 +355,19 @@ export function createExpressApp() {
     }
   });
 
-  app.put('/api/users/:id', (req: Request, res: Response) => {
+  apiRouter.put('/users/:id', (req: Request, res: Response) => {
     const user = db.updateUser(req.params.id, req.body);
     if (!user) return res.status(404).json({ error: 'User not found' });
     res.json(user);
   });
 
-  app.delete('/api/users/:id', (req: Request, res: Response) => {
+  apiRouter.delete('/users/:id', (req: Request, res: Response) => {
     const success = db.deleteUser(req.params.id);
     if (!success) return res.status(404).json({ error: 'User not found' });
     res.json({ success: true });
   });
 
-  app.put('/api/users/:id/role', (req: Request, res: Response) => {
+  apiRouter.put('/users/:id/role', (req: Request, res: Response) => {
     const { role } = req.body;
     if (role !== 'customer' && role !== 'admin') {
       return res.status(400).json({ error: 'Invalid role' });
@@ -362,9 +378,13 @@ export function createExpressApp() {
   });
 
   // --- Admin Stats ---
-  app.get('/api/admin/stats', (req: Request, res: Response) => {
+  apiRouter.get('/admin/stats', (req: Request, res: Response) => {
     res.json(db.getAdminStats());
   });
+
+  // 4. Mount apiRouter on BOTH '/api' AND '/' to ensure 100% path compatibility across all environments
+  app.use('/api', apiRouter);
+  app.use('/', apiRouter);
 
   return app;
 }
