@@ -36,7 +36,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       {/* Image Container */}
       <div className="relative aspect-square bg-slate-950/80 overflow-hidden">
         <img
-          src={product.images[0]}
+          src={product.images?.[0] || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1000&q=80'}
           alt={product.name}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100"
           loading="lazy"
@@ -44,13 +44,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
         {/* Badges Overlay */}
         <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10 items-start">
-          {product.discountPercentage && product.discountPercentage > 0 && (
+          {product.discountPercentage !== undefined && Number(product.discountPercentage) > 0 && (
             <span className="px-2.5 py-1 bg-rose-500/90 text-white font-black text-[11px] rounded-lg shadow-md border border-rose-400/30 backdrop-blur-md tracking-wide">
               -{product.discountPercentage}% OFF
             </span>
           )}
 
-          {product.isFlashDeal && (
+          {Boolean(product.isFlashDeal) && (
             <span className="px-2 py-0.5 bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black text-[10px] rounded-md shadow-md flex items-center gap-1 uppercase">
               <Zap className="w-3 h-3 fill-slate-950" /> Flash Deal
             </span>
@@ -84,12 +84,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           {/* Category & Rating */}
           <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
             <span className="font-bold text-slate-400 uppercase tracking-wider text-[10px]">
-              {product.category}
+              {product.category || 'General'}
             </span>
             <div className="flex items-center gap-1 font-bold text-slate-200">
               <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-              <span>{product.rating.toFixed(1)}</span>
-              <span className="text-slate-500 font-normal">({product.reviewCount})</span>
+              <span>{Number(product.rating ?? 5).toFixed(1)}</span>
+              <span className="text-slate-500 font-normal">({Number(product.reviewCount ?? 0)})</span>
             </div>
           </div>
 
@@ -103,10 +103,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <div className="pt-2 border-t border-white/10 flex items-center justify-between gap-2 mt-auto">
           <div>
             <div className="flex items-baseline gap-1.5">
-              <span className="text-lg font-black text-cyan-400">${product.price.toFixed(2)}</span>
-              {product.originalPrice && (
-                <span className="text-xs text-slate-500 line-through">${product.originalPrice.toFixed(2)}</span>
-              )}
+              <span className="text-lg font-black text-cyan-400">${Number(product.price || 0).toFixed(2)}</span>
+              {product.originalPrice ? (
+                <span className="text-xs text-slate-500 line-through">${Number(product.originalPrice).toFixed(2)}</span>
+              ) : null}
             </div>
             <div className="text-[10px] font-bold text-cyan-300 flex items-center gap-1">
               <Check className="w-3 h-3 text-cyan-400" /> Cash on Delivery

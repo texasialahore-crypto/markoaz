@@ -13,7 +13,7 @@ export const ProductGrid: React.FC = () => {
 
   // Filters
   const [minPrice, setMinPrice] = useState<number>(0);
-  const [maxPrice, setMaxPrice] = useState<number>(500);
+  const [maxPrice, setMaxPrice] = useState<number>(1000);
   const [minRating, setMinRating] = useState<number>(0);
   const [sortBy, setSortBy] = useState<string>('newest');
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState<boolean>(false);
@@ -22,14 +22,14 @@ export const ProductGrid: React.FC = () => {
     setIsLoading(true);
     try {
       const data = await api.getProducts({
-        category: selectedCategory,
-        search: searchQuery,
-        minPrice,
-        maxPrice,
+        category: selectedCategory !== 'All' ? selectedCategory : undefined,
+        search: searchQuery ? searchQuery : undefined,
+        minPrice: minPrice > 0 ? minPrice : undefined,
+        maxPrice: maxPrice < 1000 ? maxPrice : undefined,
         minRating: minRating > 0 ? minRating : undefined,
         sort: sortBy
       });
-      setProducts(data);
+      setProducts(data || []);
     } catch (err) {
       console.error('Error fetching products', err);
     } finally {
@@ -45,7 +45,7 @@ export const ProductGrid: React.FC = () => {
     setSelectedCategory('All');
     setSearchQuery('');
     setMinPrice(0);
-    setMaxPrice(500);
+    setMaxPrice(1000);
     setMinRating(0);
     setSortBy('newest');
   };
@@ -113,7 +113,7 @@ export const ProductGrid: React.FC = () => {
             <input
               type="range"
               min="10"
-              max="500"
+              max="1000"
               step="10"
               value={maxPrice}
               onChange={e => setMaxPrice(Number(e.target.value))}
@@ -166,7 +166,7 @@ export const ProductGrid: React.FC = () => {
                 <input
                   type="range"
                   min="10"
-                  max="500"
+                  max="1000"
                   step="10"
                   value={maxPrice}
                   onChange={e => setMaxPrice(Number(e.target.value))}

@@ -516,7 +516,78 @@ class DBStore {
         const raw = fs.readFileSync(DB_FILE, 'utf-8');
         this.data = JSON.parse(raw);
         let mutated = false;
-        // Ensure default admin user exists
+
+        // 1. Ensure categories exist and are complete
+        if (!Array.isArray(this.data.categories) || this.data.categories.length === 0) {
+          this.data.categories = initialCategories;
+          mutated = true;
+        } else {
+          // Ensure all initial categories are included
+          initialCategories.forEach(initCat => {
+            if (!this.data.categories.some(c => c.name.toLowerCase() === initCat.name.toLowerCase())) {
+              this.data.categories.push(initCat);
+              mutated = true;
+            }
+          });
+        }
+
+        // 2. Ensure products exist and are fully populated
+        if (!Array.isArray(this.data.products) || this.data.products.length === 0) {
+          this.data.products = [...initialProducts];
+          mutated = true;
+        } else {
+          // Ensure all initial showcase products exist
+          initialProducts.forEach(initProd => {
+            if (!this.data.products.some(p => p.id === initProd.id || p.name.toLowerCase() === initProd.name.toLowerCase())) {
+              this.data.products.push(initProd);
+              mutated = true;
+            }
+          });
+        }
+
+        // 3. Sanitize and normalize all product data fields
+        this.data.products = this.data.products.map(p => {
+          const isFeatured = Boolean(p.isFeatured ?? (p as any).featured ?? false);
+          const isFlashDeal = Boolean(p.isFlashDeal ?? (p as any).flashDeal ?? false);
+          const price = typeof p.price === 'number' ? p.price : Number(p.price) || 0;
+          const originalPrice = p.originalPrice ? (typeof p.originalPrice === 'number' ? p.originalPrice : Number(p.originalPrice) || undefined) : undefined;
+          const rating = typeof p.rating === 'number' ? p.rating : Number(p.rating) || 4.8;
+          const reviewCount = typeof p.reviewCount === 'number' ? p.reviewCount : Number(p.reviewCount) || 12;
+          const stock = typeof p.stock === 'number' ? p.stock : Number(p.stock) || 20;
+          const images = Array.isArray(p.images) && p.images.length > 0
+            ? p.images
+            : ['https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1000&q=80'];
+          const tags = Array.isArray(p.tags) ? p.tags : [p.category?.toLowerCase() || 'general'];
+          const specifications = p.specifications && typeof p.specifications === 'object'
+            ? p.specifications
+            : { 'Warranty': '1 Year Official Warranty' };
+
+          return {
+            ...p,
+            price,
+            originalPrice,
+            rating,
+            reviewCount,
+            stock,
+            isFeatured,
+            isFlashDeal,
+            images,
+            tags,
+            specifications,
+            category: p.category || 'Electronics'
+          };
+        });
+
+        // 4. Recalculate category product counts
+        this.data.categories.forEach(cat => {
+          const count = this.data.products.filter(p => p.category && p.category.toLowerCase() === cat.name.toLowerCase()).length;
+          if (cat.productCount !== count) {
+            cat.productCount = count;
+            mutated = true;
+          }
+        });
+
+        // 5. Ensure default admin user exists
         const adminIndex = this.data.users.findIndex(u => u.role === 'admin' || u.id === 'user-admin' || u.email === 'admin@markoaz.com');
         if (adminIndex === -1) {
           this.data.users.unshift({
@@ -652,46 +723,47 @@ class DBStore {
   }): Product[] {
     let list = [...this.data.products];
 
-    if (query?.category && query.category !== 'All') {
-      list = list.filter(p => p.category.toLowerCase() === query.category!.toLowerCase());
+    if (query?.category && query.category.trim() !== '' && query.category.toLowerCase() !== 'all') {
+      const catQuery = query.category.trim().toLowerCase();
+      list = list.filter(p => p.category && p.category.trim().toLowerCase() === catQuery);
     }
 
-    if (query?.search) {
+    if (query?.search && query.search.trim() !== '') {
       const q = query.search.toLowerCase().trim();
       list = list.filter(p =>
-        p.name.toLowerCase().includes(q) ||
-        p.description.toLowerCase().includes(q) ||
-        p.category.toLowerCase().includes(q) ||
-        p.tags.some(t => t.toLowerCase().includes(q))
+        (p.name && p.name.toLowerCase().includes(q)) ||
+        (p.description && p.description.toLowerCase().includes(q)) ||
+        (p.category && p.category.toLowerCase().includes(q)) ||
+        (Array.isArray(p.tags) && p.tags.some(t => t.toLowerCase().includes(q)))
       );
     }
 
-    if (query?.minPrice !== undefined) {
-      list = list.filter(p => p.price >= query.minPrice!);
+    if (query?.minPrice !== undefined && !isNaN(Number(query.minPrice))) {
+      list = list.filter(p => Number(p.price) >= Number(query.minPrice));
     }
-    if (query?.maxPrice !== undefined) {
-      list = list.filter(p => p.price <= query.maxPrice!);
+    if (query?.maxPrice !== undefined && !isNaN(Number(query.maxPrice))) {
+      list = list.filter(p => Number(p.price) <= Number(query.maxPrice));
     }
-    if (query?.minRating !== undefined) {
-      list = list.filter(p => p.rating >= query.minRating!);
+    if (query?.minRating !== undefined && !isNaN(Number(query.minRating))) {
+      list = list.filter(p => Number(p.rating || 0) >= Number(query.minRating));
     }
     if (query?.featured) {
-      list = list.filter(p => p.isFeatured);
+      list = list.filter(p => Boolean(p.isFeatured || (p as any).featured));
     }
     if (query?.flashDeal) {
-      list = list.filter(p => p.isFlashDeal);
+      list = list.filter(p => Boolean(p.isFlashDeal || (p as any).flashDeal));
     }
 
     if (query?.sort) {
       switch (query.sort) {
         case 'price_asc':
-          list.sort((a, b) => a.price - b.price);
+          list.sort((a, b) => Number(a.price) - Number(b.price));
           break;
         case 'price_desc':
-          list.sort((a, b) => b.price - a.price);
+          list.sort((a, b) => Number(b.price) - Number(a.price));
           break;
         case 'rating_desc':
-          list.sort((a, b) => b.rating - a.rating);
+          list.sort((a, b) => Number(b.rating || 0) - Number(a.rating || 0));
           break;
         case 'newest':
           list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -710,13 +782,25 @@ class DBStore {
 
   addProduct(product: Omit<Product, 'id' | 'createdAt' | 'rating' | 'reviewCount' | 'slug'>): Product {
     const id = 'prod-' + Date.now();
-    const slug = product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const slug = (product.name || 'product').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const isFeatured = Boolean(product.isFeatured ?? (product as any).featured ?? false);
+    const isFlashDeal = Boolean(product.isFlashDeal ?? (product as any).flashDeal ?? false);
     const newProd: Product = {
       ...product,
       id,
       slug,
+      price: Number(product.price) || 0,
+      originalPrice: product.originalPrice ? Number(product.originalPrice) : undefined,
+      stock: Number(product.stock) || 10,
       rating: 5.0,
       reviewCount: 0,
+      isFeatured,
+      isFlashDeal,
+      images: Array.isArray(product.images) && product.images.length > 0
+        ? product.images
+        : ['https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1000&q=80'],
+      tags: Array.isArray(product.tags) ? product.tags : [product.category?.toLowerCase() || 'general'],
+      specifications: product.specifications || { 'Warranty': '1 Year Official Warranty' },
       createdAt: new Date().toISOString()
     };
     this.data.products.unshift(newProd);
@@ -724,7 +808,7 @@ class DBStore {
     // Update category product count
     const cat = this.data.categories.find(c => c.name.toLowerCase() === newProd.category.toLowerCase());
     if (cat) {
-      cat.productCount += 1;
+      cat.productCount = this.data.products.filter(p => p.category && p.category.toLowerCase() === cat.name.toLowerCase()).length;
     }
 
     this.save();
@@ -734,9 +818,38 @@ class DBStore {
   updateProduct(id: string, update: Partial<Product>): Product | null {
     const idx = this.data.products.findIndex(p => p.id === id);
     if (idx === -1) return null;
-    this.data.products[idx] = { ...this.data.products[idx], ...update };
+    const existing = this.data.products[idx];
+    const isFeatured = update.isFeatured !== undefined
+      ? Boolean(update.isFeatured)
+      : (update as any).featured !== undefined
+        ? Boolean((update as any).featured)
+        : existing.isFeatured;
+    const isFlashDeal = update.isFlashDeal !== undefined
+      ? Boolean(update.isFlashDeal)
+      : (update as any).flashDeal !== undefined
+        ? Boolean((update as any).flashDeal)
+        : existing.isFlashDeal;
+
+    const updated: Product = {
+      ...existing,
+      ...update,
+      price: update.price !== undefined ? Number(update.price) : existing.price,
+      originalPrice: update.originalPrice !== undefined ? Number(update.originalPrice) : existing.originalPrice,
+      stock: update.stock !== undefined ? Number(update.stock) : existing.stock,
+      isFeatured,
+      isFlashDeal,
+      images: Array.isArray(update.images) && update.images.length > 0 ? update.images : existing.images
+    };
+
+    this.data.products[idx] = updated;
+
+    // Recalculate category counts
+    this.data.categories.forEach(cat => {
+      cat.productCount = this.data.products.filter(p => p.category && p.category.toLowerCase() === cat.name.toLowerCase()).length;
+    });
+
     this.save();
-    return this.data.products[idx];
+    return updated;
   }
 
   deleteProduct(id: string): boolean {

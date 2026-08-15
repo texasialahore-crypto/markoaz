@@ -109,19 +109,19 @@ export const ProductDetailsView: React.FC = () => {
         <div className="lg:col-span-7 space-y-4">
           <div className="relative aspect-square sm:aspect-4/3 bg-slate-950/80 rounded-3xl overflow-hidden border border-white/10 shadow-2xl backdrop-blur-xl">
             <img
-              src={selectedProduct.images[activeImageIndex] || selectedProduct.images[0]}
+              src={selectedProduct.images?.[activeImageIndex] || selectedProduct.images?.[0] || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1000&q=80'}
               alt={selectedProduct.name}
               className="w-full h-full object-cover"
             />
-            {selectedProduct.discountPercentage && (
+            {selectedProduct.discountPercentage && Number(selectedProduct.discountPercentage) > 0 ? (
               <span className="absolute top-4 left-4 px-3 py-1 bg-rose-500/90 backdrop-blur-md text-white font-black text-xs rounded-lg shadow-md border border-rose-400/30">
                 -{selectedProduct.discountPercentage}% OFF
               </span>
-            )}
+            ) : null}
           </div>
 
           {/* Thumbnails */}
-          {selectedProduct.images.length > 1 && (
+          {Array.isArray(selectedProduct.images) && selectedProduct.images.length > 1 && (
             <div className="flex gap-3 overflow-x-auto pb-2">
               {selectedProduct.images.map((img, idx) => (
                 <button
@@ -143,9 +143,9 @@ export const ProductDetailsView: React.FC = () => {
           <div>
             <div className="flex items-center gap-2 mb-2">
               <span className="text-xs font-bold text-cyan-300 bg-cyan-500/20 border border-cyan-500/30 px-2.5 py-0.5 rounded-full">
-                {selectedProduct.category}
+                {selectedProduct.category || 'General'}
               </span>
-              {selectedProduct.stock > 0 ? (
+              {Number(selectedProduct.stock || 0) > 0 ? (
                 <span className="text-xs font-semibold text-slate-400">In Stock ({selectedProduct.stock} available)</span>
               ) : (
                 <span className="text-xs font-bold text-rose-400">Out of Stock</span>
@@ -163,18 +163,18 @@ export const ProductDetailsView: React.FC = () => {
                   <Star
                     key={s}
                     className={`w-4 h-4 ${
-                      s <= Math.round(selectedProduct.rating) ? 'fill-amber-400 text-amber-400' : 'text-slate-700'
+                      s <= Math.round(Number(selectedProduct.rating ?? 5)) ? 'fill-amber-400 text-amber-400' : 'text-slate-700'
                     }`}
                   />
                 ))}
               </div>
-              <span className="text-xs font-bold text-white">{selectedProduct.rating.toFixed(1)}</span>
+              <span className="text-xs font-bold text-white">{Number(selectedProduct.rating ?? 5).toFixed(1)}</span>
               <span className="text-slate-600">|</span>
               <button
                 onClick={() => setActiveTab('reviews')}
                 className="text-xs text-slate-400 hover:text-cyan-300 font-semibold underline"
               >
-                {selectedProduct.reviewCount} Reviews
+                {Number(selectedProduct.reviewCount ?? 0)} Reviews
               </button>
             </div>
           </div>
@@ -183,10 +183,10 @@ export const ProductDetailsView: React.FC = () => {
           <div className="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl flex items-center justify-between">
             <div>
               <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-black text-cyan-400">${selectedProduct.price.toFixed(2)}</span>
-                {selectedProduct.originalPrice && (
-                  <span className="text-sm text-slate-500 line-through">${selectedProduct.originalPrice.toFixed(2)}</span>
-                )}
+                <span className="text-3xl font-black text-cyan-400">${Number(selectedProduct.price || 0).toFixed(2)}</span>
+                {selectedProduct.originalPrice ? (
+                  <span className="text-sm text-slate-500 line-through">${Number(selectedProduct.originalPrice).toFixed(2)}</span>
+                ) : null}
               </div>
               <p className="text-xs text-slate-400 mt-0.5">Taxes included. Free shipping available.</p>
             </div>
