@@ -89,6 +89,11 @@ export interface StoreSettings {
   flashSaleDiscount: number;
   supportPhone: string;
   supportEmail: string;
+  storeName?: string;
+  announcementBanner?: string;
+  codEnabled?: boolean;
+  flashSaleActive?: boolean;
+  flashSaleDiscountPercentage?: number;
 }
 
 export interface OrderItem {

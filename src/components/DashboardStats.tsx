@@ -30,7 +30,8 @@ import {
   PieChart as PieIcon,
   Activity,
   CheckCircle2,
-  Clock
+  Clock,
+  Inbox
 } from 'lucide-react';
 import { AdminStats, Order, Product, Category, User } from '../types';
 
@@ -58,6 +59,86 @@ const CATEGORY_COLORS = [
   '#14b8a6'  // Teal
 ];
 
+// Top-level Custom Tooltip for Line/Area/Bar Charts (outside component to prevent unmount on re-renders)
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-slate-950/95 backdrop-blur-xl border border-white/15 p-3.5 rounded-2xl shadow-2xl space-y-2 text-xs min-w-44 z-50">
+        <div className="flex items-center justify-between border-b border-white/10 pb-1.5 font-bold text-slate-300">
+          <span className="flex items-center gap-1.5 text-white">
+            <Calendar className="w-3.5 h-3.5 text-cyan-400" /> {label}
+          </span>
+        </div>
+        <div className="space-y-1.5">
+          {payload.map((entry: any, index: number) => {
+            const isRevenue = entry.dataKey === 'sales';
+            const isOrders = entry.dataKey === 'orders';
+            const isAvg = entry.dataKey === 'avgOrderValue';
+
+            let labelName = entry.name;
+            let valFormatted = entry.value;
+
+            if (isRevenue) {
+              labelName = 'Total Revenue';
+              valFormatted = `$${Number(entry.value || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            } else if (isOrders) {
+              labelName = 'Orders Volume';
+              valFormatted = `${entry.value || 0} orders`;
+            } else if (isAvg) {
+              labelName = 'Avg Order Value';
+              valFormatted = `$${Number(entry.value || 0).toFixed(2)}`;
+            }
+
+            return (
+              <div key={`item-${index}`} className="flex items-center justify-between gap-4 text-[11px]">
+                <span className="flex items-center gap-1.5" style={{ color: entry.color || '#06b6d4' }}>
+                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color || '#06b6d4' }} />
+                  {labelName}:
+                </span>
+                <span className="font-extrabold text-white font-mono">{valFormatted}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
+
+// Top-level Custom Tooltip for Pie Chart
+const CustomPieTooltip = ({ active, payload, totalRevenue }: any) => {
+  if (active && payload && payload.length) {
+    const data = payload[0];
+    const rev = totalRevenue && totalRevenue > 0 ? totalRevenue : (data.value || 1);
+    const percent = (((data.value || 0) / Math.max(1, rev)) * 100).toFixed(1);
+
+    return (
+      <div className="bg-slate-950/95 backdrop-blur-xl border border-white/15 p-3 rounded-2xl shadow-2xl text-xs space-y-1 z-50">
+        <div className="font-bold text-white flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: data.payload.fill || '#06b6d4' }} />
+          {data.name}
+        </div>
+        <div className="flex justify-between gap-4 text-slate-400">
+          <span>Sales:</span>
+          <span className="font-bold text-cyan-300">${Number(data.value || 0).toFixed(2)}</span>
+        </div>
+        <div className="flex justify-between gap-4 text-slate-400 text-[10px]">
+          <span>Share of Revenue:</span>
+          <span className="font-semibold text-white">{percent}%</span>
+        </div>
+        {data.payload.count !== undefined && (
+          <div className="flex justify-between gap-4 text-slate-400 text-[10px]">
+            <span>Catalog Items:</span>
+            <span className="font-semibold text-slate-300">{data.payload.count} products</span>
+          </div>
+        )}
+      </div>
+    );
+  }
+  return null;
+};
+
 export const DashboardStats: React.FC<DashboardStatsProps> = ({
   stats,
   orders = [],
@@ -72,7 +153,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
 
   // Process & format salesData for Recharts
   const chartData = useMemo(() => {
-    if (!stats || !stats.salesData || stats.salesData.length === 0) {
+    if (!stats || !Array.isArray(stats.salesData) || stats.salesData.length === 0) {
       // Fallback baseline data if no recorded dates
       const today = new Date();
       const fallback = [];
@@ -119,13 +200,15 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
         formattedDate = item.date;
       }
 
-      const avgOrderValue = item.orders > 0 ? Number((item.sales / item.orders).toFixed(2)) : 0;
+      const salesVal = typeof item.sales === 'number' ? item.sales : Number(item.sales) || 0;
+      const ordersVal = typeof item.orders === 'number' ? item.orders : Number(item.orders) || 0;
+      const avgOrderValue = ordersVal > 0 ? Number((salesVal / ordersVal).toFixed(2)) : 0;
 
       return {
         rawDate: item.date,
         date: formattedDate,
-        sales: Number(item.sales.toFixed(2)),
-        orders: item.orders,
+        sales: Number(salesVal.toFixed(2)),
+        orders: ordersVal,
         avgOrderValue
       };
     });
@@ -133,11 +216,11 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
 
   // Aggregate Key Performance Indicators (KPIs)
   const kpis = useMemo(() => {
-    const totalRevenue = stats?.totalRevenue || 0;
-    const totalOrders = stats?.totalOrders || 0;
-    const totalProducts = stats?.totalProducts || products.length;
-    const totalUsers = stats?.totalUsers || users.length;
-    const pendingOrders = stats?.pendingOrdersCount || 0;
+    const totalRevenue = typeof stats?.totalRevenue === 'number' ? stats.totalRevenue : (Number(stats?.totalRevenue) || 0);
+    const totalOrders = typeof stats?.totalOrders === 'number' ? stats.totalOrders : (orders.length || 0);
+    const totalProducts = typeof stats?.totalProducts === 'number' ? stats.totalProducts : (products.length || 0);
+    const totalUsers = typeof stats?.totalUsers === 'number' ? stats.totalUsers : (users.length || 0);
+    const pendingOrders = typeof stats?.pendingOrdersCount === 'number' ? stats.pendingOrdersCount : 0;
 
     const avgOrderValue = totalOrders > 0 ? (totalRevenue / totalOrders).toFixed(2) : '0.00';
 
@@ -168,10 +251,11 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
     // Top Category
     let topCategory = 'General';
     let topCategorySales = 0;
-    if (stats?.categoryBreakdown) {
+    if (stats?.categoryBreakdown && Array.isArray(stats.categoryBreakdown)) {
       stats.categoryBreakdown.forEach(c => {
-        if (c.sales > topCategorySales) {
-          topCategorySales = c.sales;
+        const sales = typeof c.sales === 'number' ? c.sales : Number(c.sales) || 0;
+        if (sales > topCategorySales) {
+          topCategorySales = sales;
           topCategory = c.category;
         }
       });
@@ -193,97 +277,21 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       topCategory,
       topCategorySales
     };
-  }, [stats, products.length, users.length, chartData]);
+  }, [stats, orders.length, products.length, users.length, chartData]);
 
   // Category Pie Data
   const pieCategoryData = useMemo(() => {
-    if (!stats?.categoryBreakdown || stats.categoryBreakdown.length === 0) return [];
+    if (!stats?.categoryBreakdown || !Array.isArray(stats.categoryBreakdown) || stats.categoryBreakdown.length === 0) {
+      return [];
+    }
     return stats.categoryBreakdown
-      .filter(c => c.sales > 0 || c.count > 0)
+      .filter(c => (c.sales && c.sales > 0) || (c.count && c.count > 0))
       .map(c => ({
         name: c.category,
-        sales: c.sales,
-        count: c.count
+        sales: typeof c.sales === 'number' ? c.sales : Number(c.sales) || 0,
+        count: typeof c.count === 'number' ? c.count : Number(c.count) || 0
       }));
   }, [stats?.categoryBreakdown]);
-
-  // Custom Chart Tooltip
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-slate-950/95 backdrop-blur-xl border border-white/15 p-3.5 rounded-2xl shadow-2xl space-y-2 text-xs min-w-44">
-          <div className="flex items-center justify-between border-b border-white/10 pb-1.5 font-bold text-slate-300">
-            <span className="flex items-center gap-1.5 text-white">
-              <Calendar className="w-3.5 h-3.5 text-cyan-400" /> {label}
-            </span>
-          </div>
-          <div className="space-y-1.5">
-            {payload.map((entry: any, index: number) => {
-              const isRevenue = entry.dataKey === 'sales';
-              const isOrders = entry.dataKey === 'orders';
-              const isAvg = entry.dataKey === 'avgOrderValue';
-
-              let labelName = entry.name;
-              let valFormatted = entry.value;
-
-              if (isRevenue) {
-                labelName = 'Total Revenue';
-                valFormatted = `$${Number(entry.value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-              } else if (isOrders) {
-                labelName = 'Orders Volume';
-                valFormatted = `${entry.value} orders`;
-              } else if (isAvg) {
-                labelName = 'Avg Order Value';
-                valFormatted = `$${Number(entry.value).toFixed(2)}`;
-              }
-
-              return (
-                <div key={`item-${index}`} className="flex items-center justify-between gap-4 text-[11px]">
-                  <span className="flex items-center gap-1.5" style={{ color: entry.color }}>
-                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
-                    {labelName}:
-                  </span>
-                  <span className="font-extrabold text-white font-mono">{valFormatted}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      );
-    }
-    return null;
-  };
-
-  // Custom Pie Tooltip
-  const CustomPieTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      const data = payload[0];
-      const totalRevenue = stats?.totalRevenue || 1;
-      const percent = ((data.value / Math.max(1, totalRevenue)) * 100).toFixed(1);
-
-      return (
-        <div className="bg-slate-950/95 backdrop-blur-xl border border-white/15 p-3 rounded-2xl shadow-2xl text-xs space-y-1">
-          <div className="font-bold text-white flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: data.payload.fill }} />
-            {data.name}
-          </div>
-          <div className="flex justify-between gap-4 text-slate-400">
-            <span>Sales:</span>
-            <span className="font-bold text-cyan-300">${Number(data.value).toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between gap-4 text-slate-400 text-[10px]">
-            <span>Share of Revenue:</span>
-            <span className="font-semibold text-white">{percent}%</span>
-          </div>
-          <div className="flex justify-between gap-4 text-slate-400 text-[10px]">
-            <span>Catalog Items:</span>
-            <span className="font-semibold text-slate-300">{data.payload.count} products</span>
-          </div>
-        </div>
-      );
-    }
-    return null;
-  };
 
   return (
     <div className="space-y-6" id="dashboard-stats-component">
@@ -295,11 +303,11 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
               <Activity className="w-5 h-5 text-cyan-400" /> Revenue & Order Volume Analytics
             </h2>
             <span className="text-[10px] font-bold px-2 py-0.5 bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 rounded-md uppercase tracking-wider flex items-center gap-1">
-              <Sparkles className="w-3 h-3 text-cyan-400" /> Real-Time Sync
+              <Sparkles className="w-3 h-3 text-cyan-400" /> Live Data
             </span>
           </div>
           <p className="text-xs text-slate-400 mt-1">
-            Visualizing daily revenue trends, order counts, customer engagement, and category distributions.
+            Visualizing daily revenue trends, order volume, and category distribution from live store activity.
           </p>
         </div>
 
@@ -480,10 +488,10 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
         </div>
 
         {/* Recharts Canvas */}
-        <div className="w-full h-80 sm:h-96">
+        <div className="w-full h-80 sm:h-96 min-h-[320px]">
           {/* VIEW 1: COMBINED REVENUE & ORDER VOLUME */}
           {viewMode === 'combined' && (
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={280}>
               <ComposedChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="cyanGradient" x1="0" y1="0" x2="0" y2="1">
@@ -551,7 +559,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
 
           {/* VIEW 2: REVENUE ONLY */}
           {viewMode === 'revenue' && (
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={280}>
               <AreaChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
@@ -591,7 +599,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
 
           {/* VIEW 3: VOLUME ONLY */}
           {viewMode === 'volume' && (
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={280}>
               <BarChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.5} vertical={false} />
                 <XAxis
@@ -626,26 +634,33 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
           {viewMode === 'categories' && (
             <div className="grid grid-cols-1 md:grid-cols-2 h-full items-center gap-6">
               {/* Category Pie Chart */}
-              <div className="h-64 sm:h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={pieCategoryData}
-                      dataKey="sales"
-                      nameKey="name"
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={90}
-                      innerRadius={50}
-                      paddingAngle={3}
-                    >
-                      {pieCategoryData.map((_, index) => (
-                        <Cell key={`cell-${index}`} fill={CATEGORY_COLORS[index % CATEGORY_COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip content={<CustomPieTooltip />} />
-                  </PieChart>
-                </ResponsiveContainer>
+              <div className="h-64 sm:h-80 w-full">
+                {pieCategoryData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={240}>
+                    <PieChart>
+                      <Pie
+                        data={pieCategoryData}
+                        dataKey="sales"
+                        nameKey="name"
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={90}
+                        innerRadius={50}
+                        paddingAngle={3}
+                      >
+                        {pieCategoryData.map((_, index) => (
+                          <Cell key={`cell-${index}`} fill={CATEGORY_COLORS[index % CATEGORY_COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip content={(props: any) => <CustomPieTooltip {...props} totalRevenue={kpis.totalRevenue} />} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="h-full flex flex-col items-center justify-center text-slate-500 text-xs">
+                    <Inbox className="w-8 h-8 mb-2 opacity-40" />
+                    No category sales data recorded yet.
+                  </div>
+                )}
               </div>
 
               {/* Category Legend & Metrics Table */}
@@ -653,26 +668,30 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
                 <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
                   Category Revenue Share
                 </h4>
-                {pieCategoryData.map((cat, idx) => {
-                  const color = CATEGORY_COLORS[idx % CATEGORY_COLORS.length];
-                  const percent = ((cat.sales / Math.max(1, kpis.totalRevenue)) * 100).toFixed(1);
-                  return (
-                    <div
-                      key={cat.name}
-                      className="bg-slate-950/60 border border-white/5 p-2.5 rounded-xl flex items-center justify-between text-xs"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
-                        <span className="font-bold text-white">{cat.name}</span>
-                        <span className="text-[10px] text-slate-400">({cat.count} prods)</span>
+                {pieCategoryData.length > 0 ? (
+                  pieCategoryData.map((cat, idx) => {
+                    const color = CATEGORY_COLORS[idx % CATEGORY_COLORS.length];
+                    const percent = ((cat.sales / Math.max(1, kpis.totalRevenue)) * 100).toFixed(1);
+                    return (
+                      <div
+                        key={cat.name}
+                        className="bg-slate-950/60 border border-white/5 p-2.5 rounded-xl flex items-center justify-between text-xs"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
+                          <span className="font-bold text-white">{cat.name}</span>
+                          <span className="text-[10px] text-slate-400">({cat.count} prods)</span>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-black text-cyan-300">${cat.sales.toFixed(2)}</div>
+                          <div className="text-[10px] text-slate-400 font-semibold">{percent}%</div>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <div className="font-black text-cyan-300">${cat.sales.toFixed(2)}</div>
-                        <div className="text-[10px] text-slate-400 font-semibold">{percent}%</div>
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })
+                ) : (
+                  <p className="text-xs text-slate-500 italic">No sales categorized yet.</p>
+                )}
               </div>
             </div>
           )}
