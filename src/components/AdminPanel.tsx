@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useStore } from '../context/StoreContext';
 import { useAuth } from '../context/AuthContext';
 import { AdminLoginPage } from './AdminLoginPage';
+import { DashboardStats } from './DashboardStats';
 import { api } from '../services/api';
 import { Product, Category, Order, User, Review, AdminStats, OrderStatus, PaymentStatus, StoreSettings } from '../types';
 import {
@@ -607,102 +608,53 @@ export const AdminPanel: React.FC = () => {
       </div>
 
       {/* TAB 1: OVERVIEW METRICS */}
-      {activeTab === 'stats' && stats && (
+      {activeTab === 'stats' && (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            <div className="bg-slate-900/60 backdrop-blur-xl p-6 rounded-3xl border border-white/10 shadow-xl space-y-2">
-              <div className="flex items-center justify-between text-slate-400 text-xs font-bold uppercase tracking-wider">
-                <span>Total Store Sales</span>
-                <DollarSign className="w-5 h-5 text-cyan-400" />
-              </div>
-              <div className="text-3xl font-black text-white">${stats.totalRevenue.toFixed(2)}</div>
-              <div className="text-[11px] text-cyan-400 font-semibold">Includes Cash on Delivery orders</div>
-            </div>
+          <DashboardStats
+            stats={stats}
+            orders={orders}
+            products={products}
+            categories={categories}
+            users={users}
+            onRefresh={loadAllData}
+            isLoading={isLoading}
+          />
 
-            <div className="bg-slate-900/60 backdrop-blur-xl p-6 rounded-3xl border border-white/10 shadow-xl space-y-2">
-              <div className="flex items-center justify-between text-slate-400 text-xs font-bold uppercase tracking-wider">
-                <span>Registered Customers</span>
-                <Users className="w-5 h-5 text-cyan-400" />
-              </div>
-              <div className="text-3xl font-black text-white">{users.length}</div>
-              <div className="text-[11px] text-slate-400">Tracked with unique Customer IDs</div>
-            </div>
-
-            <div className="bg-slate-900/60 backdrop-blur-xl p-6 rounded-3xl border border-white/10 shadow-xl space-y-2">
-              <div className="flex items-center justify-between text-slate-400 text-xs font-bold uppercase tracking-wider">
-                <span>Total Orders</span>
-                <ShoppingBag className="w-5 h-5 text-cyan-400" />
-              </div>
-              <div className="text-3xl font-black text-white">{stats.totalOrders}</div>
-              <div className="text-[11px] text-amber-300 font-semibold">{stats.pendingOrdersCount} awaiting dispatch</div>
-            </div>
-
-            <div className="bg-slate-900/60 backdrop-blur-xl p-6 rounded-3xl border border-white/10 shadow-xl space-y-2">
-              <div className="flex items-center justify-between text-slate-400 text-xs font-bold uppercase tracking-wider">
-                <span>Catalog Items</span>
-                <Package className="w-5 h-5 text-cyan-400" />
-              </div>
-              <div className="text-3xl font-black text-white">{stats.totalProducts}</div>
-              <div className="text-[11px] text-slate-400">Across {categories.length} store categories</div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-slate-900/60 backdrop-blur-xl p-6 rounded-3xl border border-white/10 shadow-xl space-y-4">
+          {/* Recent Orders Quick Triage Card */}
+          <div className="bg-slate-900/60 backdrop-blur-xl p-5 sm:p-6 rounded-3xl border border-white/10 shadow-xl space-y-4">
+            <div className="flex items-center justify-between">
               <h3 className="text-sm font-extrabold text-white flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-cyan-400" /> Category Performance
+                <ShoppingBag className="w-4 h-4 text-cyan-400" /> Recent Store Dispatches & Customer Activity
               </h3>
-              <div className="space-y-3 pt-2">
-                {stats.categoryBreakdown.map(cat => (
-                  <div key={cat.category} className="space-y-1">
-                    <div className="flex justify-between text-xs font-bold">
-                      <span className="text-slate-300">{cat.category}</span>
-                      <span className="text-white">${cat.sales.toFixed(2)}</span>
-                    </div>
-                    <div className="w-full bg-slate-950/80 h-2 rounded-full overflow-hidden border border-white/10">
-                      <div
-                        className="bg-gradient-to-r from-cyan-500 to-blue-500 h-full rounded-full"
-                        style={{ width: `${Math.min(100, (cat.sales / Math.max(1, stats.totalRevenue)) * 100)}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <button
+                onClick={() => setActiveTab('orders')}
+                className="text-xs text-cyan-400 hover:text-cyan-300 font-bold flex items-center gap-1"
+              >
+                View & Process All Orders ({orders.length}) →
+              </button>
             </div>
-
-            <div className="bg-slate-900/60 backdrop-blur-xl p-6 rounded-3xl border border-white/10 shadow-xl space-y-4">
-              <h3 className="text-sm font-extrabold text-white flex items-center justify-between">
-                <span className="flex items-center gap-2">
-                  <ShoppingBag className="w-4 h-4 text-cyan-400" /> Recent Store Dispatches
-                </span>
-                <button
-                  onClick={() => setActiveTab('orders')}
-                  className="text-xs text-cyan-400 hover:text-cyan-300 font-bold"
-                >
-                  Manage All Orders →
-                </button>
-              </h3>
-              <div className="space-y-2.5 max-h-72 overflow-y-auto divide-y divide-white/10">
-                {orders.slice(0, 5).map(o => (
-                  <div key={o.id} className="pt-2.5 flex justify-between items-center text-xs">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono font-bold text-cyan-300">{o.id}</span>
-                        <span className="font-mono text-[10px] bg-slate-950 px-1.5 py-0.5 rounded text-slate-400 border border-white/10">
-                          {o.customerId || 'CUST'}
-                        </span>
-                      </div>
-                      <div className="text-[11px] text-slate-400 mt-0.5">{o.customerName}</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-black text-white">${o.total.toFixed(2)}</div>
-                      <span className="text-[10px] font-bold uppercase text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded border border-cyan-500/30">
-                        {o.orderStatus.replace(/_/g, ' ')}
+            <div className="space-y-2.5 max-h-72 overflow-y-auto divide-y divide-white/10">
+              {orders.slice(0, 6).map(o => (
+                <div key={o.id} className="pt-2.5 flex justify-between items-center text-xs">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono font-bold text-cyan-300">{o.id}</span>
+                      <span className="font-mono text-[10px] bg-slate-950 px-1.5 py-0.5 rounded text-slate-400 border border-white/10">
+                        {o.customerId || 'CUST'}
                       </span>
                     </div>
+                    <div className="text-[11px] text-slate-400 mt-0.5">
+                      {o.customerName} • {o.items.length} item{o.items.length !== 1 ? 's' : ''} • {new Date(o.createdAt).toLocaleDateString()}
+                    </div>
                   </div>
-                ))}
-              </div>
+                  <div className="text-right">
+                    <div className="font-black text-white">${o.total.toFixed(2)}</div>
+                    <span className="text-[10px] font-bold uppercase text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded border border-cyan-500/30">
+                      {o.orderStatus.replace(/_/g, ' ')}
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>

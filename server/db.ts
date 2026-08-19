@@ -517,12 +517,139 @@ const initialOrders: Order[] = [
     orderStatus: 'out_for_delivery',
     trackingNumber: 'TRK-MKZ-882194',
     estimatedDelivery: 'Tomorrow by 5:00 PM',
-    createdAt: '2026-08-11T14:30:00.000Z',
+    createdAt: '2026-08-14T14:30:00.000Z',
     timeline: [
-      { status: 'placed', label: 'Order Confirmed', time: 'Aug 11, 2:30 PM', completed: true },
-      { status: 'processing', label: 'Packed & Verified', time: 'Aug 12, 9:15 AM', completed: true },
-      { status: 'out_for_delivery', label: 'Out for Delivery (Cash on Delivery)', time: 'Aug 13, 8:00 AM', completed: true },
-      { status: 'delivered', label: 'Delivered', time: 'Estimated Aug 14', completed: false }
+      { status: 'placed', label: 'Order Confirmed', time: 'Aug 14, 2:30 PM', completed: true },
+      { status: 'processing', label: 'Packed & Verified', time: 'Aug 15, 9:15 AM', completed: true },
+      { status: 'out_for_delivery', label: 'Out for Delivery (Cash on Delivery)', time: 'Aug 16, 8:00 AM', completed: true },
+      { status: 'delivered', label: 'Delivered', time: 'Estimated Aug 17', completed: false }
+    ]
+  },
+  {
+    id: 'ORD-77412',
+    userId: 'user-1',
+    customerId: 'CUST-39201',
+    customerName: 'Sarah Jenkins',
+    customerEmail: 'sarah.j@example.com',
+    customerPhone: '+1 (555) 234-5678',
+    shippingAddress: {
+      street: '742 Evergreen Terrace',
+      city: 'Springfield',
+      state: 'IL',
+      zipCode: '62701',
+      country: 'United States'
+    },
+    items: [
+      {
+        productId: 'prod-2',
+        name: 'Veloce Pro Titanium Smartwatch',
+        price: 249.99,
+        quantity: 1,
+        image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1000&q=80',
+        selectedColor: 'Midnight Black'
+      }
+    ],
+    subtotal: 249.99,
+    shippingFee: 0,
+    discount: 0,
+    tax: 20.00,
+    total: 269.99,
+    paymentMethod: 'card',
+    paymentStatus: 'paid',
+    orderStatus: 'delivered',
+    trackingNumber: 'TRK-MKZ-339102',
+    estimatedDelivery: 'Delivered',
+    createdAt: '2026-08-15T11:20:00.000Z',
+    timeline: [
+      { status: 'placed', label: 'Order Confirmed', time: 'Aug 15, 11:20 AM', completed: true },
+      { status: 'processing', label: 'Packed & Verified', time: 'Aug 15, 3:00 PM', completed: true },
+      { status: 'out_for_delivery', label: 'Out for Delivery', time: 'Aug 16, 9:00 AM', completed: true },
+      { status: 'delivered', label: 'Delivered', time: 'Aug 17, 2:15 PM', completed: true }
+    ]
+  },
+  {
+    id: 'ORD-62189',
+    userId: 'user-2',
+    customerId: 'CUST-84920',
+    customerName: 'David Miller',
+    customerEmail: 'demo@markoaz.com',
+    customerPhone: '+1 (555) 438-9102',
+    shippingAddress: {
+      street: '100 Innovation Way, Suite 400',
+      city: 'San Francisco',
+      state: 'CA',
+      zipCode: '94105',
+      country: 'United States'
+    },
+    items: [
+      {
+        productId: 'prod-3',
+        name: 'Lumina Organic Cotton Oversized Hoodie',
+        price: 79.99,
+        quantity: 2,
+        image: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=1000&q=80',
+        selectedColor: 'Heather Grey',
+        selectedSize: 'L'
+      }
+    ],
+    subtotal: 159.98,
+    shippingFee: 0,
+    discount: 15.00,
+    tax: 11.60,
+    total: 156.58,
+    paymentMethod: 'cod',
+    paymentStatus: 'pending',
+    orderStatus: 'processing',
+    trackingNumber: 'TRK-MKZ-551029',
+    estimatedDelivery: 'Thursday by 5:00 PM',
+    createdAt: '2026-08-17T09:45:00.000Z',
+    timeline: [
+      { status: 'placed', label: 'Order Confirmed', time: 'Aug 17, 9:45 AM', completed: true },
+      { status: 'processing', label: 'Packing & Preparing', time: 'Aug 17, 1:15 PM', completed: true },
+      { status: 'out_for_delivery', label: 'Out for Delivery (Cash on Delivery)', time: 'Pending', completed: false },
+      { status: 'delivered', label: 'Delivered', time: 'Estimated Aug 19', completed: false }
+    ]
+  },
+  {
+    id: 'ORD-89304',
+    userId: 'user-1',
+    customerId: 'CUST-39201',
+    customerName: 'Sarah Jenkins',
+    customerEmail: 'sarah.j@example.com',
+    customerPhone: '+1 (555) 234-5678',
+    shippingAddress: {
+      street: '742 Evergreen Terrace',
+      city: 'Springfield',
+      state: 'IL',
+      zipCode: '62701',
+      country: 'United States'
+    },
+    items: [
+      {
+        productId: 'prod-4',
+        name: 'AuraGlass Minimalist Double-Wall Tumbler',
+        price: 34.99,
+        quantity: 3,
+        image: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=1000&q=80',
+        selectedColor: 'Clear Glass'
+      }
+    ],
+    subtotal: 104.97,
+    shippingFee: 0,
+    discount: 10.00,
+    tax: 7.60,
+    total: 102.57,
+    paymentMethod: 'card',
+    paymentStatus: 'paid',
+    orderStatus: 'placed',
+    trackingNumber: 'TRK-MKZ-993812',
+    estimatedDelivery: 'Friday by 5:00 PM',
+    createdAt: '2026-08-18T16:10:00.000Z',
+    timeline: [
+      { status: 'placed', label: 'Order Confirmed', time: 'Aug 18, 4:10 PM', completed: true },
+      { status: 'processing', label: 'Processing & Packing', time: 'In Progress', completed: false },
+      { status: 'out_for_delivery', label: 'Out for Delivery', time: 'Pending', completed: false },
+      { status: 'delivered', label: 'Delivered', time: 'Pending', completed: false }
     ]
   }
 ];
